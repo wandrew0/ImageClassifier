@@ -165,7 +165,7 @@ export default function DrawCanvas() {
                     hideGrid={styles.canvas.hideGrid}
                     canvasWidth={styles.canvas.canvasWidth}
                     canvasHeight={styles.canvas.canvasHeight}
-                    disabled={styles.canvas.disabled}
+                    disabled={true}
                     imgSrc={styles.canvas.imgSrc}
                     immediateLoading={styles.canvas.immediateLoading}
                     hideInterface={styles.canvas.hideInterface}
