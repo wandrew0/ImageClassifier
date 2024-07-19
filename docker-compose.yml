@@ -1,0 +1,13 @@
+services:
+  app:
+    platform: linux/x86_64
+    build: .
+    ports:
+      - 3000:3000
+      - 3001:3001
+    volumes:
+      - mongo_db:/data/db
+    image: andrew2021wang/moneywatcher:latest
+
+volumes:
+  mongo_db: {}
