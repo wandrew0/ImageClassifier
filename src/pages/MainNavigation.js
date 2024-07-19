@@ -30,27 +30,6 @@ const MainNavigation = ({ active }) => {
                             <li>
                                 <NavLink to="/"> Home</NavLink>
                             </li>
-                            {active === "0" && (
-                                <li>
-                                    <NavLink to="/login">
-                                        Login
-                                    </NavLink>
-                                </li>
-                            )}
-                            {active === "0" && (
-                                <li>
-                                    <NavLink to="/signup">
-                                        Signup
-                                    </NavLink>
-                                </li>
-                            )}
-                            {active === "1" && (
-                                <li>
-                                    <button onClick={Logout}>
-                                        Logout
-                                    </button>
-                                </li>
-                            )}
                             <li>
                                 <NavLink to="/DrawCanvas">Draw</NavLink>
                             </li>
