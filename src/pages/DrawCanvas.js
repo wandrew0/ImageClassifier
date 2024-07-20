@@ -1,6 +1,28 @@
 import React, { useEffect, useRef, useState } from "react";
-import "react-canvas-paint/dist/index.css";
 import CanvasDraw from "@win11react/react-canvas-draw";
+import { InferenceSession, Tensor, env } from "onnxruntime-web";
+import { classOf } from "./QuickDrawClasses";
+
+import "./DrawCanvas.css";
+
+env.wasm.wasmPaths = "/static/";
+
+const softmax = (logits) => {
+    const maxLogit = Math.max(...logits);
+    const exps = logits.map((x) => Math.exp(x - maxLogit));
+    const sumExps = exps.reduce((a, b) => a + b);
+    return exps.map((x) => x / sumExps);
+};
+
+const getTopK = (arr, k) => {
+    arr = Array.from(arr);
+    const idxs = arr
+        .map((value, index) => [value, index])
+        .sort((a, b) => b[0] - a[0])
+        .slice(0, k)
+        .map((item) => item[1]);
+    return idxs;
+};
 
 export default function DrawCanvas() {
     const canvasRef = useRef(null);
@@ -9,17 +31,42 @@ export default function DrawCanvas() {
     const [copyCanvasContext, setCopyCanvasContext] = useState(null);
     const imageArray = useRef(null);
 
+    const [result, setResult] = useState(null);
+    const [loading, setLoading] = useState(null);
+    const [session, setSession] = useState(null);
+    const [tensor, setTensor] = useState(null);
+    const topK = 5;
+
     useEffect(() => {
+        (async () => {
+            const session = await InferenceSession.create(
+                "/efficientnet_v2_s_quickdraw.onnx",
+                { graphOptimizationLevel: "all" }
+            );
+            setSession(session);
+        })();
         const context = canvasRef.current.canvas.drawing.getContext("2d", {
-            willReadFrequently: true, // doesn't work
+            willReadFrequently: true,
         });
         setCanvasContext(context);
         const copy = copyCanvasRef.current.canvas.drawing.getContext("2d", {
-            willReadFrequently: true, // doesn't work
+            willReadFrequently: true,
         });
         setCopyCanvasContext(copy);
-        // copy.scale(20, 20);
-        // together();
+        // const onPageLoad = () => {
+        //     setTimeout(() => {
+        //         canvasRef.current.eraseAll();
+        //     }, 200);
+        // };
+
+        // // Check if the page has already loaded
+        // if (document.readyState === "complete") {
+        //     onPageLoad();
+        // } else {
+        //     window.addEventListener("load", onPageLoad, false);
+        //     // Remove the event listener when component unmounts
+        //     return () => window.removeEventListener("load", onPageLoad);
+        // }
     }, []);
 
     const convertTo2DPixelArray = (imageData) => {
@@ -47,6 +94,7 @@ export default function DrawCanvas() {
     };
 
     const invert = (arr) => {
+        // console.log("invert");
         const height = arr.length;
         const width = arr[0].length;
         for (let y = 0; y < height; y++) {
@@ -175,42 +223,75 @@ export default function DrawCanvas() {
 
     const scale = 20;
 
-    function together() {
+    async function together() {
+        // rename to handleChange
         const lines = canvasRef.current.lines;
         if (lines.length > 0) {
             const line = lines[lines.length - 1];
-            line.brushRadius = 20;
+            line.brushRadius = 15;
             const points = line.points;
             line.points = [];
             for (let i = 0; i < points.length; i++) {
+                // if (i % 50 === 0 || points.length <= 3) {
                 line.points.push({
                     x: points[i].x - 560 * 9,
                     y: points[i].y - 560 * 9,
                 });
+                // }
             }
             // console.log(line.points);
         }
         const save = canvasRef.current.getSaveData();
         copyCanvasRef.current.loadSaveData(save, true);
-        copyCanvasContext.putImageData(
-            convertToImageData(
-                copyCanvasContext,
-                center(
-                    invert(
-                        convertTo2DPixelArray(
-                            copyCanvasContext.getImageData(0, 0, 28, 28)
-                        )
-                    )
+        const raw = center(
+            invert(
+                convertTo2DPixelArray(
+                    copyCanvasContext.getImageData(0, 0, 28, 28)
                 )
-            ),
+            )
+        );
+        // console.log(raw);
+        copyCanvasContext.putImageData(
+            convertToImageData(copyCanvasContext, raw),
             0,
             0
         );
+
+        const tensor = new Float32Array(28 * 28);
+
+        for (let i = 0; i < 28 * 28; i++) {
+            tensor[i] = raw[Math.floor(i / 28)][i % 28].r / 255.0;
+        }
+
+        const input = new Tensor("float32", tensor, [1, 1, 28, 28]);
+        const feeds = { input: input };
+
+        const start = performance.now();
+        const output = await session.run(feeds);
+        const end = performance.now();
+
+        const logits = output[Object.keys(output)[0]].data;
+        const probs = softmax(logits);
+
+        const topKIndices = getTopK(probs, topK);
+
+        const resultData = topKIndices.map((idx) => ({
+            class: classOf(idx),
+            prob: (probs[idx] * 100).toFixed(2),
+        }));
+
+        setResult({ time: (end - start).toFixed(2), resultData });
     }
 
     const styles = {
         buttons: {
             flex: "1 0 100%",
+            textAlign: "center",
+            margin: "5px 0px",
+            alignItems: "center",
+            justifyItems: "center",
+            justifyContent: "center",
+            leftAlign: "left",
         },
         divideLine: {
             width: "100%",
@@ -219,15 +300,16 @@ export default function DrawCanvas() {
         },
         container: {
             display: "flex",
-            justifyContent: "center",
+            justifyContent: "space-evenly",
             justifyItems: "stretch",
             flexDirection: "row",
             alignItems: "center",
             flexWrap: "wrap",
+            margin: "0%",
         },
         border: {
             width: "560px",
-            margin: "5% 5%",
+            margin: "0% 0%",
         },
         canvas: {
             onChange: null,
@@ -263,6 +345,32 @@ export default function DrawCanvas() {
                 Please draw a letter or number on the canvas below
             </h4>
             <div style={styles.container}>
+                <div className="button-container" style={styles.buttons}>
+                    <button
+                        style={styles.buttons}
+                        className="centered-button"
+                        onClick={(e) => {
+                            e.currentTarget.blur();
+                            canvasRef.current.eraseAll();
+                            setResult(null);
+                        }}
+                    >
+                        reset
+                    </button>
+                </div>
+                <div
+                    style={{
+                        height: "560px",
+                        overflowY: "scroll",
+                        whiteSpace: "nowrap",
+                    }}
+                >
+                    {Array.apply(0, Array(345)).map(function (x, i) {
+                        return (
+                            <p style={{ margin: "0px 0px" }}>{classOf(i)}</p>
+                        );
+                    })}
+                </div>
                 <div style={styles.border}>
                     <CanvasDraw
                         ref={canvasRef}
@@ -325,44 +433,27 @@ export default function DrawCanvas() {
                         zoomExtents={styles.canvas.zoomExtents}
                     />
                 </div>
-                <div className="button-container" style={styles.buttons}>
-                    <button
-                        className="centered-button"
-                        onClick={() => {
-                            canvasRef.current.eraseAll();
-                        }}
-                    >
-                        reset
-                    </button>
-                    {/* <button
-                        className="centered-button"
-                        onClick={() => {
-                            const lines = canvasRef.current.lines;
-                            for (let i = 0; i < lines.length; i++) {
-                                const line = lines[i];
-                                line.brushRadius = 5;
-                                const points = line.points;
-                                line.points = [];
-                                for (let i = 0; i < points.length; i++) {
-                                    line.points.push({
-                                        x: points[i].x + 560 * 9,
-                                        y: points[i].y + 560 * 9,
-                                    });
-                                }
-                            }
-                            canvasRef.current.undo();
-                            together();
-                        }}
-                    >
-                        undo last
-                    </button> */}
-                    {/* <button className="centered-button" onClick={handleCapture}>
-                        capture
-                    </button>
-                    <button className="centered-button" onClick={handleRender}>
-                        render below
-                    </button> */}
-                </div>
+                {result && (
+                    <div className="result">
+                        <p className="time">Time: {result.time} ms</p>
+                        <table className="result-table">
+                            <thead>
+                                <tr>
+                                    <th>Class</th>
+                                    <th>Probability</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {result.resultData.map((item, index) => (
+                                    <tr key={index}>
+                                        <td>{item.class}</td>
+                                        <td>{item.prob} %</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
         </div>
     );

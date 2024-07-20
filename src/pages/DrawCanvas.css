@@ -1,0 +1,13 @@
+.result {
+    flex: 1 0 100%;
+    display: flex;
+    flex-direction: column; 
+    place-items: center;
+    align-self: center;
+    align-content: center;
+    justify-content: center; 
+}
+
+.result-table th, .result-table td {
+  padding: 5px 20px;
+}
