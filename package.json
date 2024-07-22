@@ -22,7 +22,7 @@
     "express": "^4.19.2",
     "handlebars-loader": "^1.7.3",
     "onnxruntime-node": "^1.18.0",
-    "onnxruntime-web": "^1.18.0",
+    "onnxruntime-web": "1.18.0",
     "react": "^17.0.2",
     "react-canvas-paint": "^1.0.1",
     "react-dom": "^17.0.2",
