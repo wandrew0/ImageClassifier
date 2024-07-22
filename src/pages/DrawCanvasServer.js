@@ -1,11 +1,36 @@
 import React, { useEffect, useRef, useState } from "react";
 import CanvasDraw from "@win11react/react-canvas-draw";
-import { InferenceSession, Tensor, env } from "onnxruntime-web";
+// import { InferenceSession, Tensor, env } from "onnxruntime-web";
 import { classOf } from "./QuickDrawClasses";
 
 import "./DrawCanvas.css";
 
-env.wasm.wasmPaths = "/static/";
+// env.wasm.wasmPaths = "/static/";
+
+const callApi = async (path, body) => {
+    const headers = { "Content-Type": "application/json" };
+
+    const url = "http://" + window.location.hostname + ":3000" + path;
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(body),
+    });
+
+    return response;
+};
+
+const serverClassify = async (arr) => {
+    const res = await callApi("/api/quickdraw/classify", { input: arr });
+    const parsed = await res.json();
+
+    const logits = parsed.data.logits;
+    const end = parsed.data.end;
+    const start = parsed.data.start;
+
+    return { logits, end, start };
+};
 
 const softmax = (logits) => {
     const maxLogit = Math.max(...logits);
@@ -24,31 +49,31 @@ const getTopK = (arr, k) => {
     return idxs;
 };
 
-export default function DrawCanvas() {
+export default function DrawCanvasServer() {
     const canvasRef = useRef(null);
     const copyCanvasRef = useRef(null);
-    const [canvasContext, setCanvasContext] = useState(null);
+    // const [canvasContext, setCanvasContext] = useState(null);
     const [copyCanvasContext, setCopyCanvasContext] = useState(null);
-    const imageArray = useRef(null);
+    // const imageArray = useRef(null);
 
     const [result, setResult] = useState(null);
-    const [loading, setLoading] = useState(null);
+    // const [loading, setLoading] = useState(null);
     const [session, setSession] = useState(null);
-    const [tensor, setTensor] = useState(null);
+    // const [tensor, setTensor] = useState(null);
     const topK = 5;
 
     useEffect(() => {
-        (async () => {
-            const session = await InferenceSession.create(
-                "/efficientnet_v2_s_quickdraw.onnx",
-                { graphOptimizationLevel: "all" }
-            );
-            setSession(session);
-        })();
+        // (async () => {
+        //     const session = await InferenceSession.create(
+        //         "/efficientnet_v2_s_quickdraw.onnx",
+        //         { graphOptimizationLevel: "all" }
+        //     );
+        //     setSession(session);
+        // })();
         const context = canvasRef.current.canvas.drawing.getContext("2d", {
             willReadFrequently: true,
         });
-        setCanvasContext(context);
+        // setCanvasContext(context);
         const copy = copyCanvasRef.current.canvas.drawing.getContext("2d", {
             willReadFrequently: true,
         });
@@ -257,24 +282,29 @@ export default function DrawCanvas() {
             0
         );
 
-        if (session === null) {
-            return;
-        }
-
-        const tensor = new Float32Array(28 * 28);
+        const arr = [];
 
         for (let i = 0; i < 28 * 28; i++) {
-            tensor[i] = raw[Math.floor(i / 28)][i % 28].r / 255.0;
+            arr[i] = raw[Math.floor(i / 28)][i % 28].r / 255.0;
         }
 
-        const input = new Tensor("float32", tensor, [1, 1, 28, 28]);
-        const feeds = { input: input };
+        const { logits, end, start } = await serverClassify(arr);
+        // console.log(logits);
 
-        const start = performance.now();
-        const output = await session.run(feeds);
-        const end = performance.now();
+        // const tensor = new Float32Array(28 * 28);
 
-        const logits = output[Object.keys(output)[0]].data;
+        // for (let i = 0; i < 28 * 28; i++) {
+        //     tensor[i] = raw[Math.floor(i / 28)][i % 28].r / 255.0;
+        // }
+
+        // const input = new Tensor("float32", tensor, [1, 1, 28, 28]);
+        // const feeds = { input: input };
+
+        // const start = performance.now();
+        // const output = await session.run(feeds);
+        // const end = performance.now();
+
+        // const logits = output[Object.keys(output)[0]].data;
         const probs = softmax(logits);
 
         const topKIndices = getTopK(probs, topK);
@@ -437,15 +467,10 @@ export default function DrawCanvas() {
                         zoomExtents={styles.canvas.zoomExtents}
                     />
                 </div>
-                {!session && (
-                    <div className="result">
-                        <p>downloading/loading model</p>
-                    </div>
-                )}
                 {result && (
                     <div className="result">
                         <p className="time">
-                            Local Inference Time: {result.time} ms
+                            Server Inference Time: {result.time} ms
                         </p>
                         <table className="result-table">
                             <thead>

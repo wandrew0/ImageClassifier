@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 
 import { isActive } from "../components/common";
 import DrawCanvas from "./DrawCanvas";
+import DrawCanvasServer from "./DrawCanvasServer";
 // <LoginWin/>
 
 //<Link to="/Merchant">Merchant</Link>
@@ -15,6 +16,7 @@ const RootWin = () => {
         <div>
             <h1 className="blueHeader">Welcome to Image Classifier</h1>
             <DrawCanvas />
+            <DrawCanvasServer />
         </div>
     );
 };
