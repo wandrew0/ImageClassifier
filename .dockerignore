@@ -3,3 +3,6 @@ Dockerfile
 .dockerignore
 docker-compose.yml
 ./build
+.idea/
+**/.DS_Store
+.git
