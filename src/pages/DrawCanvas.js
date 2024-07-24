@@ -29,18 +29,12 @@ export default function DrawCanvas() {
     const copyCanvasRef = useRef(null);
     const [canvasContext, setCanvasContext] = useState(null);
     const [copyCanvasContext, setCopyCanvasContext] = useState(null);
-    const imageArray = useRef(null);
 
     const [result, setResult] = useState(null);
-    const [loading, setLoading] = useState(null);
     const [session, setSession] = useState(null);
-    const [tensor, setTensor] = useState(null);
     const topK = 5;
 
     const [oLines, setOLines] = useState([]);
-    const [tLines, setTLines] = useState(null);
-
-    const [undoing, setUndoing] = useState(false);
 
     useEffect(() => {
         (async () => {
@@ -185,7 +179,6 @@ export default function DrawCanvas() {
         const lines = canvasRef.current.lines;
         if (lines.length > 0 && !canvasRef.current.undoing) {
             const line = lines[lines.length - 1];
-            // console.log(line);
             if (oLines.length < lines.length) {
                 const oLine = {
                     brushColor: line.brushColor,
@@ -195,12 +188,10 @@ export default function DrawCanvas() {
                 oLines.push(oLine);
                 setOLines(oLines);
             }
-            // console.log(oLines);
             line.brushRadius = 15;
             const points = line.points;
             line.points = [];
             for (let i = 0; i < points.length; i++) {
-                // if (i % 50 === 0 || points.length <= 3) {
                 if (points[i].x < 0) {
                     line.points.push(points[i]);
                 } else {
@@ -209,19 +200,12 @@ export default function DrawCanvas() {
                         y: points[i].y - 560 * 9
                     });
                 }
-                // }
             }
-            // if (tLines === null) {
-            //     setTLines(canvasRef.current.lines);
-            // }
         }
-        // console.log(oLines, tLines);
         if (canvasRef.current.undoing) {
             return;
         }
-        console.log(lines.length, canvasRef.current.undoing);
         const save = canvasRef.current.getSaveData();
-        console.log(save);
         copyCanvasRef.current.loadSaveData(save, true);
         const raw = center(
             invert(
@@ -270,7 +254,7 @@ export default function DrawCanvas() {
     const undo = () => {
         const tLines = canvasRef.current.lines;
         canvasRef.current.lines = oLines;
-        console.log(oLines, tLines);
+        // console.log(oLines, tLines);
         canvasRef.current.undoing = true;
         // console.log(canvasRef.current.lines.length);
         canvasRef.current.undo();
@@ -279,7 +263,7 @@ export default function DrawCanvas() {
         canvasRef.current.lines = tLines;
         tLines.pop();
         canvasRef.current.undoing = false;
-        console.log(canvasRef.current.lines, tLines);
+        // console.log(canvasRef.current.lines, tLines);
         together();
     };
 

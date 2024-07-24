@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "api": "cross-env PORT=3000 nodemon ./api/server.js",
-    "frontend": "cross-env PORT=3001 react-scripts start",
+    "api": "cross-env PORT=2000 nodemon ./api/server.js",
+    "frontend": "cross-env PORT=2001 react-scripts start",
     "build": "react-scripts build",
-    "serve": "cross-env PORT=3001 serve -s build",
-    "prodb": "cross-env PORT=3000 node ./api/server.js",
-    "prodf": "serve -s -l 3001 build"
+    "serve": "cross-env PORT=2001 serve -s build",
+    "prodb": "cross-env PORT=2000 node ./api/server.js",
+    "prodf": "serve -s -l 2001 build"
   },
   "author": "Andrew Wang",
   "license": "ISC",
