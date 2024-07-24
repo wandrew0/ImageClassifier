@@ -10,7 +10,7 @@ import "./DrawCanvas.css";
 const callApi = async (path, body) => {
     const headers = { "Content-Type": "application/json" };
 
-    const url = "http://" + window.location.hostname + ":3000" + path;
+    const url = "http://" + window.location.hostname + ":2000" + path;
 
     const response = await fetch(url, {
         method: "POST",

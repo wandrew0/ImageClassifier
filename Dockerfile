@@ -18,7 +18,7 @@ RUN rm -r ./src
 RUN chmod u+x ./start.sh
 
 FROM node:slim
-WORKDIR /usr/app
+WORKDIR /usr/src/app
 COPY --from=build /usr/src/app .
-CMD ./start.sh
+CMD ["sh", "./start.sh"]
 # CMD sh
