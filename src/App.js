@@ -8,6 +8,7 @@ import {
     RouterProvider,
     Navigate,
 } from "react-router-dom";
+import RecaptchaTest from "./pages/RecaptchaTest";
 
 const router = createBrowserRouter([
     {
@@ -25,7 +26,11 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-    return <RouterProvider router={router} />;
+    return (
+        <div>
+        <RecaptchaTest />
+        </div>
+    );
 }
 
 export default App;
