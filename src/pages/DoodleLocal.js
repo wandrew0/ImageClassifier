@@ -426,7 +426,7 @@ export default function DrawCanvas() {
                         hideGrid={true}
                         canvasWidth={28}
                         canvasHeight={28}
-                        disabled={false}
+                        disabled={true}
                         imgSrc={styles.canvas.imgSrc}
                         immediateLoading={
                             styles.canvas.immediateLoading

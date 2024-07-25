@@ -31,13 +31,13 @@ const MainNavigation = ({ active }) => {
                                 <NavLink to="/"> Home</NavLink>
                             </li>
                             <li>
-                                <NavLink to="/DrawCanvas">
-                                    Draw (Local Classification)
+                                <NavLink to="/DoodleLocal">
+                                    Doodle (Local)
                                 </NavLink>
                             </li>
                             <li>
-                                <NavLink to="/DrawCanvasServer">
-                                    Draw (Server Classification)
+                                <NavLink to="/DoodleServer">
+                                    Doodle (Server)
                                 </NavLink>
                             </li>
                         </ul>

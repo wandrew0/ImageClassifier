@@ -1,12 +1,12 @@
 //import logo from './logo.svg';
 import "./App.css";
 import RootLayout from "./pages/RootLayout";
-import DrawCanvas from "./pages/DrawCanvas";
-import DrawCanvasServer from "./pages/DrawCanvasServer";
+import DoodleLocal from "./pages/DoodleLocal";
+import DoodleServer from "./pages/DoodleServer";
 import {
     createBrowserRouter,
     RouterProvider,
-    Navigate,
+    Navigate
 } from "react-router-dom";
 
 const router = createBrowserRouter([
@@ -18,10 +18,10 @@ const router = createBrowserRouter([
             // { path: "/", element: <RootWin /> },
             // { path: "/login", element: <LoginWin /> },
             // { path: "/signup", element: <SignupWin /> },
-            { path: "/DrawCanvas", element: <DrawCanvas /> },
-            { path: "/DrawCanvasServer", element: <DrawCanvasServer /> },
-        ],
-    },
+            { path: "/DoodleLocal", element: <DoodleLocal /> },
+            { path: "/DoodleServer", element: <DoodleServer /> }
+        ]
+    }
 ]);
 
 function App() {
