@@ -24,10 +24,9 @@ const getTopK = (arr, k) => {
     return idxs;
 };
 
-export default function DrawCanvas() {
+export default function DoodleLocal() {
     const canvasRef = useRef(null);
     const copyCanvasRef = useRef(null);
-    const [canvasContext, setCanvasContext] = useState(null);
     const [copyCanvasContext, setCopyCanvasContext] = useState(null);
 
     const [result, setResult] = useState(null);
@@ -44,19 +43,9 @@ export default function DrawCanvas() {
             );
             setSession(session);
         })();
-        const context = canvasRef.current.canvas.drawing.getContext(
-            "2d",
-            {
-                willReadFrequently: true
-            }
-        );
-        setCanvasContext(context);
-        const copy = copyCanvasRef.current.canvas.drawing.getContext(
-            "2d",
-            {
-                willReadFrequently: true
-            }
-        );
+        const copy = copyCanvasRef.current.canvas.drawing.getContext("2d", {
+            willReadFrequently: true,
+        });
         setCopyCanvasContext(copy);
     }, []);
 
@@ -74,7 +63,7 @@ export default function DrawCanvas() {
                     r: data[index],
                     g: data[index + 1],
                     b: data[index + 2],
-                    a: data[index + 3]
+                    a: data[index + 3],
                 };
                 row.push(pixel);
             }
@@ -135,22 +124,19 @@ export default function DrawCanvas() {
         // Extract the non-black bounding box region
         const subWidth = maxX - minX + 1;
         const subHeight = maxY - minY + 1;
-        const startRow = Math.floor(
-            (containerHeight - subHeight) / 2
-        );
+        const startRow = Math.floor((containerHeight - subHeight) / 2);
         const startCol = Math.floor((containerWidth - subWidth) / 2);
         const res = Array.from({ length: containerHeight }, () =>
             Array.from({ length: containerWidth }, () => ({
                 r: 0,
                 g: 0,
                 b: 0,
-                a: 255
+                a: 255,
             }))
         );
         for (let x = minX; x <= maxX; x++) {
             for (let y = minY; y <= maxY; y++) {
-                res[startRow + y - minY][startCol + x - minX] =
-                    pixels[y][x];
+                res[startRow + y - minY][startCol + x - minX] = pixels[y][x];
             }
         }
         return res;
@@ -183,7 +169,7 @@ export default function DrawCanvas() {
                 const oLine = {
                     brushColor: line.brushColor,
                     brushRadius: line.brushRadius,
-                    points: line.points
+                    points: line.points,
                 };
                 oLines.push(oLine);
                 setOLines(oLines);
@@ -197,7 +183,7 @@ export default function DrawCanvas() {
                 } else {
                     line.points.push({
                         x: points[i].x - 560 * 9,
-                        y: points[i].y - 560 * 9
+                        y: points[i].y - 560 * 9,
                     });
                 }
             }
@@ -245,7 +231,7 @@ export default function DrawCanvas() {
 
         const resultData = topKIndices.map((idx) => ({
             class: classOf(idx),
-            prob: (probs[idx] * 100).toFixed(2)
+            prob: (probs[idx] * 100).toFixed(2),
         }));
 
         setResult({ time: (end - start).toFixed(2), resultData });
@@ -275,12 +261,12 @@ export default function DrawCanvas() {
             alignItems: "center",
             justifyItems: "center",
             justifyContent: "center",
-            leftAlign: "left"
+            leftAlign: "left",
         },
         divideLine: {
             width: "100%",
             height: "2px",
-            border: "none"
+            border: "none",
         },
         container: {
             display: "flex",
@@ -289,11 +275,11 @@ export default function DrawCanvas() {
             flexDirection: "row",
             alignItems: "center",
             flexWrap: "wrap",
-            margin: "0%"
+            margin: "0%",
         },
         border: {
             width: "560px",
-            margin: "0% 0%"
+            margin: "0% 0%",
         },
         canvas: {
             onChange: null,
@@ -318,8 +304,8 @@ export default function DrawCanvas() {
             hideGridY: false,
             enablePanAndZoom: false,
             mouseZoomFactor: 0.01,
-            zoomExtents: { min: 0.33, max: 3 }
-        }
+            zoomExtents: { min: 0.33, max: 3 },
+        },
     };
 
     return (
@@ -329,10 +315,7 @@ export default function DrawCanvas() {
                 Please draw a letter or number on the canvas below
             </h4>
             <div style={styles.container}>
-                <div
-                    className="button-container"
-                    style={styles.buttons}
-                >
+                <div className="button-container" style={styles.buttons}>
                     <button
                         style={styles.buttons}
                         className="centered-button"
@@ -361,14 +344,12 @@ export default function DrawCanvas() {
                     style={{
                         height: "560px",
                         overflowY: "scroll",
-                        whiteSpace: "nowrap"
+                        whiteSpace: "nowrap",
                     }}
                 >
                     {Array.apply(0, Array(345)).map(function (x, i) {
                         return (
-                            <p style={{ margin: "0px 0px" }}>
-                                {classOf(i)}
-                            </p>
+                            <p style={{ margin: "0px 0px" }}>{classOf(i)}</p>
                         );
                     })}
                 </div>
@@ -388,21 +369,15 @@ export default function DrawCanvas() {
                         disabled={styles.canvas.disabled}
                         imgSrc={styles.canvas.imgSrc}
                         saveData={styles.canvas.saveData}
-                        immediateLoading={
-                            styles.canvas.immediateLoading
-                        }
+                        immediateLoading={styles.canvas.immediateLoading}
                         hideInterface={styles.canvas.hideInterface}
                         gridSizeX={styles.canvas.gridSizeX}
                         gridSizeY={styles.canvas.gridSizeY}
                         gridLineWidth={styles.canvas.gridLineWidth}
                         hideGridX={styles.canvas.hideGridX}
                         hideGridY={styles.canvas.hideGridY}
-                        enablePanAndZoom={
-                            styles.canvas.enablePanAndZoom
-                        }
-                        mouseZoomFactor={
-                            styles.canvas.mouseZoomFactor
-                        }
+                        enablePanAndZoom={styles.canvas.enablePanAndZoom}
+                        mouseZoomFactor={styles.canvas.mouseZoomFactor}
                         zoomExtents={styles.canvas.zoomExtents}
                     />
                 </div>
@@ -412,7 +387,7 @@ export default function DrawCanvas() {
                             transform: `scale(${scale})`,
                             imageRendering: "pixelated",
                             marginLeft: `${(560 - 28) / 2}px`,
-                            marginRight: `${(560 - 28) / 2}px`
+                            marginRight: `${(560 - 28) / 2}px`,
                         }}
                         // style={{  }}
                         ref={copyCanvasRef}
@@ -428,21 +403,15 @@ export default function DrawCanvas() {
                         canvasHeight={28}
                         disabled={true}
                         imgSrc={styles.canvas.imgSrc}
-                        immediateLoading={
-                            styles.canvas.immediateLoading
-                        }
+                        immediateLoading={styles.canvas.immediateLoading}
                         hideInterface={styles.canvas.hideInterface}
                         gridSizeX={5}
                         gridSizeY={5}
                         gridLineWidth={styles.canvas.gridLineWidth}
                         hideGridX={false}
                         hideGridY={false}
-                        enablePanAndZoom={
-                            styles.canvas.enablePanAndZoom
-                        }
-                        mouseZoomFactor={
-                            styles.canvas.mouseZoomFactor
-                        }
+                        enablePanAndZoom={styles.canvas.enablePanAndZoom}
+                        mouseZoomFactor={styles.canvas.mouseZoomFactor}
                         zoomExtents={styles.canvas.zoomExtents}
                     />
                 </div>
@@ -464,14 +433,12 @@ export default function DrawCanvas() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {result.resultData.map(
-                                    (item, index) => (
-                                        <tr key={index}>
-                                            <td>{item.class}</td>
-                                            <td>{item.prob} %</td>
-                                        </tr>
-                                    )
-                                )}
+                                {result.resultData.map((item, index) => (
+                                    <tr key={index}>
+                                        <td>{item.class}</td>
+                                        <td>{item.prob} %</td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>

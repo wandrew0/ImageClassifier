@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import CanvasDraw from "@win11react/react-canvas-draw";
-import { classOf } from "./QuickDrawClasses";
+import { classOf } from "./EMNISTBalancedClasses";
 
 import "./DrawCanvas.css";
 
@@ -19,7 +19,7 @@ const callApi = async (path, body) => {
 };
 
 const serverClassify = async (arr) => {
-    const res = await callApi("/api/quickdraw/classify", {
+    const res = await callApi("/api/emnistb/classify", {
         input: arr,
     });
     const parsed = await res.json();
@@ -46,6 +46,24 @@ const getTopK = (arr, k) => {
         .slice(0, k)
         .map((item) => item[1]);
     return idxs;
+};
+
+const transform = (array) => {
+    for (let row of array) {
+        row.reverse();
+    }
+
+    let rs = array.length;
+    let cs = array[0].length;
+    let rotated = Array.from({ length: cs }, () => Array(rs).fill(0));
+
+    for (let r = 0; r < rs; r++) {
+        for (let c = 0; c < cs; c++) {
+            rotated[cs - c - 1][r] = array[r][c];
+        }
+    }
+
+    return rotated;
 };
 
 export default function DoodleServer() {
@@ -222,10 +240,12 @@ export default function DoodleServer() {
             0
         );
 
+        const transformed = transform(raw);
+
         const arr = [];
 
         for (let i = 0; i < 28 * 28; i++) {
-            arr[i] = raw[Math.floor(i / 28)][i % 28].r / 255.0;
+            arr[i] = transformed[Math.floor(i / 28)][i % 28].r / 255.0;
         }
 
         const { logits, end, start } = await serverClassify(arr);

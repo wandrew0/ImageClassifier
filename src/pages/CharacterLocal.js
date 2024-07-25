@@ -1,35 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import CanvasDraw from "@win11react/react-canvas-draw";
-import { classOf } from "./QuickDrawClasses";
+import { InferenceSession, Tensor, env } from "onnxruntime-web";
+import { classOf } from "./EMNISTBalancedClasses";
 
 import "./DrawCanvas.css";
 
-const callApi = async (path, body) => {
-    const headers = { "Content-Type": "application/json" };
-
-    const url = "http://" + window.location.hostname + ":2000" + path;
-
-    const response = await fetch(url, {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(body),
-    });
-
-    return response;
-};
-
-const serverClassify = async (arr) => {
-    const res = await callApi("/api/quickdraw/classify", {
-        input: arr,
-    });
-    const parsed = await res.json();
-
-    const logits = parsed.data.logits;
-    const end = parsed.data.end;
-    const start = parsed.data.start;
-
-    return { logits, end, start };
-};
+env.wasm.wasmPaths = "/static/";
 
 const softmax = (logits) => {
     const maxLogit = Math.max(...logits);
@@ -48,17 +24,43 @@ const getTopK = (arr, k) => {
     return idxs;
 };
 
-export default function DoodleServer() {
+const transform = (array) => {
+    for (let row of array) {
+        row.reverse();
+    }
+
+    let rs = array.length;
+    let cs = array[0].length;
+    let rotated = Array.from({ length: cs }, () => Array(rs).fill(0));
+
+    for (let r = 0; r < rs; r++) {
+        for (let c = 0; c < cs; c++) {
+            rotated[cs - c - 1][r] = array[r][c];
+        }
+    }
+
+    return rotated;
+};
+
+export default function DrawCanvas() {
     const canvasRef = useRef(null);
     const copyCanvasRef = useRef(null);
     const [copyCanvasContext, setCopyCanvasContext] = useState(null);
 
     const [result, setResult] = useState(null);
+    const [session, setSession] = useState(null);
     const topK = 5;
 
     const [oLines, setOLines] = useState([]);
 
     useEffect(() => {
+        (async () => {
+            const session = await InferenceSession.create(
+                "/kaggleguy2_emnist_balanced.onnx",
+                { graphOptimizationLevel: "all" }
+            );
+            setSession(session);
+        })();
         const copy = copyCanvasRef.current.canvas.drawing.getContext("2d", {
             willReadFrequently: true,
         });
@@ -166,10 +168,10 @@ export default function DoodleServer() {
             for (let x = 0; x < width; x++) {
                 const index = (y * width + x) * 4;
                 const pixel = pixelArray[y][x];
-                imageData.data[index] = pixel.r; // R value
-                imageData.data[index + 1] = pixel.g; // G value
-                imageData.data[index + 2] = pixel.b; // B value
-                imageData.data[index + 3] = pixel.a; // A value
+                imageData.data[index] = pixel.r;
+                imageData.data[index + 1] = pixel.g;
+                imageData.data[index + 2] = pixel.b;
+                imageData.data[index + 3] = pixel.a;
             }
         }
         return imageData;
@@ -216,19 +218,33 @@ export default function DoodleServer() {
                 )
             )
         );
+        // console.log(raw);
         copyCanvasContext.putImageData(
             convertToImageData(copyCanvasContext, raw),
             0,
             0
         );
-
-        const arr = [];
-
-        for (let i = 0; i < 28 * 28; i++) {
-            arr[i] = raw[Math.floor(i / 28)][i % 28].r / 255.0;
+        // console.log(canvasRef.current.undoing);
+        if (session === null) {
+            return;
         }
 
-        const { logits, end, start } = await serverClassify(arr);
+        const transformed = transform(raw);
+
+        const tensor = new Float32Array(28 * 28);
+
+        for (let i = 0; i < 28 * 28; i++) {
+            tensor[i] = transformed[Math.floor(i / 28)][i % 28].r / 255.0;
+        }
+
+        const input = new Tensor("float32", tensor, [1, 1, 28, 28]);
+        const feeds = { input: input };
+
+        const start = performance.now();
+        const output = await session.run(feeds);
+        const end = performance.now();
+
+        const logits = output[Object.keys(output)[0]].data;
         const probs = softmax(logits);
 
         const topKIndices = getTopK(probs, topK);
@@ -335,7 +351,7 @@ export default function DoodleServer() {
                         className="centered-button"
                         onClick={(e) => {
                             e.currentTarget.blur();
-                            canvasRef.current.eraseAll();
+                            canvasRef.current.clear();
                             setOLines([]);
                             setResult(null);
                             together();
@@ -419,10 +435,15 @@ export default function DoodleServer() {
                         zoomExtents={styles.canvas.zoomExtents}
                     />
                 </div>
+                {!session && (
+                    <div className="result">
+                        <p>downloading/loading model</p>
+                    </div>
+                )}
                 {result && (
                     <div className="result">
                         <p className="time">
-                            Server Inference Time: {result.time} ms
+                            Local Inference Time: {result.time} ms
                         </p>
                         <table className="result-table">
                             <thead>

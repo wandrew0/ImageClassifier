@@ -3,10 +3,12 @@ import "./App.css";
 import RootLayout from "./pages/RootLayout";
 import DoodleLocal from "./pages/DoodleLocal";
 import DoodleServer from "./pages/DoodleServer";
+import CharacterLocal from "./pages/CharacterLocal";
+import CharacterServer from "./pages/CharacterServer";
 import {
     createBrowserRouter,
     RouterProvider,
-    Navigate
+    Navigate,
 } from "react-router-dom";
 
 const router = createBrowserRouter([
@@ -19,9 +21,11 @@ const router = createBrowserRouter([
             // { path: "/login", element: <LoginWin /> },
             // { path: "/signup", element: <SignupWin /> },
             { path: "/DoodleLocal", element: <DoodleLocal /> },
-            { path: "/DoodleServer", element: <DoodleServer /> }
-        ]
-    }
+            { path: "/DoodleServer", element: <DoodleServer /> },
+            { path: "/CharacterLocal", element: <CharacterLocal /> },
+            { path: "/CharacterServer", element: <CharacterServer /> },
+        ],
+    },
 ]);
 
 function App() {

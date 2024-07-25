@@ -40,6 +40,16 @@ const MainNavigation = ({ active }) => {
                                     Doodle (Server)
                                 </NavLink>
                             </li>
+                            <li>
+                                <NavLink to="/CharacterLocal">
+                                    Character (Local)
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink to="/CharacterServer">
+                                    Character (Server)
+                                </NavLink>
+                            </li>
                         </ul>
                     </div>
                 </nav>
