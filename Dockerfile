@@ -1,8 +1,8 @@
 FROM node:slim AS build
 # RUN apt-get update && \
 #     apt-get install -y vim
-EXPOSE 3000
-EXPOSE 3001
+EXPOSE 2000
+EXPOSE 2001
 WORKDIR /usr/src/app
 COPY package*.json .
 RUN npm config rm proxy
