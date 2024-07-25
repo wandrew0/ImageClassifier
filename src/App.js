@@ -1,8 +1,10 @@
 //import logo from './logo.svg';
 import "./App.css";
 import RootLayout from "./pages/RootLayout";
-import DrawCanvas from "./pages/DrawCanvas";
-import DrawCanvasServer from "./pages/DrawCanvasServer";
+import DoodleLocal from "./pages/DoodleLocal";
+import DoodleServer from "./pages/DoodleServer";
+import CharacterLocal from "./pages/CharacterLocal";
+import CharacterServer from "./pages/CharacterServer";
 import {
     createBrowserRouter,
     RouterProvider,
@@ -19,8 +21,10 @@ const router = createBrowserRouter([
             // { path: "/", element: <RootWin /> },
             // { path: "/login", element: <LoginWin /> },
             // { path: "/signup", element: <SignupWin /> },
-            { path: "/DrawCanvas", element: <DrawCanvas /> },
-            { path: "/DrawCanvasServer", element: <DrawCanvasServer /> },
+            { path: "/DoodleLocal", element: <DoodleLocal /> },
+            { path: "/DoodleServer", element: <DoodleServer /> },
+            { path: "/CharacterLocal", element: <CharacterLocal /> },
+            { path: "/CharacterServer", element: <CharacterServer /> },
         ],
     },
 ]);

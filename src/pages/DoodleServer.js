@@ -1,11 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import CanvasDraw from "@win11react/react-canvas-draw";
-// import { InferenceSession, Tensor, env } from "onnxruntime-web";
 import { classOf } from "./QuickDrawClasses";
 
 import "./DrawCanvas.css";
-
-// env.wasm.wasmPaths = "/static/";
 
 const callApi = async (path, body) => {
     const headers = { "Content-Type": "application/json" };
@@ -22,7 +19,9 @@ const callApi = async (path, body) => {
 };
 
 const serverClassify = async (arr) => {
-    const res = await callApi("/api/quickdraw/classify", { input: arr });
+    const res = await callApi("/api/quickdraw/classify", {
+        input: arr,
+    });
     const parsed = await res.json();
 
     const logits = parsed.data.logits;
@@ -49,55 +48,26 @@ const getTopK = (arr, k) => {
     return idxs;
 };
 
-export default function DrawCanvasServer() {
+export default function DoodleServer() {
     const canvasRef = useRef(null);
     const copyCanvasRef = useRef(null);
-    // const [canvasContext, setCanvasContext] = useState(null);
     const [copyCanvasContext, setCopyCanvasContext] = useState(null);
-    // const imageArray = useRef(null);
 
     const [result, setResult] = useState(null);
-    // const [loading, setLoading] = useState(null);
-    const [session, setSession] = useState(null);
-    // const [tensor, setTensor] = useState(null);
     const topK = 5;
 
+    const [oLines, setOLines] = useState([]);
+
     useEffect(() => {
-        // (async () => {
-        //     const session = await InferenceSession.create(
-        //         "/efficientnet_v2_s_quickdraw.onnx",
-        //         { graphOptimizationLevel: "all" }
-        //     );
-        //     setSession(session);
-        // })();
-        const context = canvasRef.current.canvas.drawing.getContext("2d", {
-            willReadFrequently: true,
-        });
-        // setCanvasContext(context);
         const copy = copyCanvasRef.current.canvas.drawing.getContext("2d", {
             willReadFrequently: true,
         });
         setCopyCanvasContext(copy);
-        // const onPageLoad = () => {
-        //     setTimeout(() => {
-        //         canvasRef.current.eraseAll();
-        //     }, 200);
-        // };
-
-        // // Check if the page has already loaded
-        // if (document.readyState === "complete") {
-        //     onPageLoad();
-        // } else {
-        //     window.addEventListener("load", onPageLoad, false);
-        //     // Remove the event listener when component unmounts
-        //     return () => window.removeEventListener("load", onPageLoad);
-        // }
     }, []);
 
     const convertTo2DPixelArray = (imageData) => {
         const width = imageData.width;
         const height = imageData.height;
-        // console.log("width:" + width + ", height:" + height);
         const data = imageData.data;
         const pixelArray = [];
 
@@ -119,14 +89,12 @@ export default function DrawCanvasServer() {
     };
 
     const invert = (arr) => {
-        // console.log("invert");
         const height = arr.length;
         const width = arr[0].length;
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
                 const pixel = arr[y][x];
                 if (pixel.a !== 0) {
-                    // console.log(pixel);
                     pixel.r = (255 - pixel.r) * (pixel.a / 255);
                     pixel.g = (255 - pixel.g) * (pixel.a / 255);
                     pixel.b = (255 - pixel.b) * (pixel.a / 255);
@@ -134,7 +102,6 @@ export default function DrawCanvasServer() {
                 pixel.a = 255;
             }
         }
-        // console.log(arr);
 
         return arr;
     };
@@ -189,49 +156,11 @@ export default function DrawCanvasServer() {
             }
         }
         return res;
-        // const subArray = Array.from({ length: subHeight }, () =>
-        //     Array.from({ length: subWidth }, () => ({
-        //         r: 0,
-        //         g: 0,
-        //         b: 0,
-        //         a: 255,
-        //     }))
-        // );
-
-        // for (let y = minY; y <= maxY; y++) {
-        //     for (let x = minX; x <= maxX; x++) {
-        //         subArray[y - minY][x - minX] = pixels[y][x];
-        //     }
-        // }
-
-        // // Create a new centered array
-        // const centeredArray = Array.from({ length: containerHeight }, () =>
-        //     Array.from({ length: containerWidth }, () => ({
-        //         r: 0,
-        //         g: 0,
-        //         b: 0,
-        //         a: 255,
-        //     }))
-        // );
-
-        // // Calculate start positions to center the subArray
-        // const startRow = Math.floor((containerHeight - subHeight) / 2);
-        // const startCol = Math.floor((containerWidth - subWidth) / 2);
-
-        // // Place the subArray into the centeredArray
-        // for (let y = 0; y < subHeight; y++) {
-        //     for (let x = 0; x < subWidth; x++) {
-        //         centeredArray[startRow + y][startCol + x] = subArray[y][x];
-        //     }
-        // }
-
-        // return centeredArray;
     };
 
     const convertToImageData = (context, pixelArray) => {
         var height = pixelArray.length;
         var width = pixelArray[0].length;
-        // console.log("width:" + width + ", height:" + height);
         const imageData = context.createImageData(width, height);
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
@@ -249,22 +178,34 @@ export default function DrawCanvasServer() {
     const scale = 20;
 
     async function together() {
-        // rename to handleChange
         const lines = canvasRef.current.lines;
-        if (lines.length > 0) {
+        if (lines.length > 0 && !canvasRef.current.undoing) {
             const line = lines[lines.length - 1];
+            if (oLines.length < lines.length) {
+                const oLine = {
+                    brushColor: line.brushColor,
+                    brushRadius: line.brushRadius,
+                    points: line.points,
+                };
+                oLines.push(oLine);
+                setOLines(oLines);
+            }
             line.brushRadius = 15;
             const points = line.points;
             line.points = [];
             for (let i = 0; i < points.length; i++) {
-                // if (i % 50 === 0 || points.length <= 3) {
-                line.points.push({
-                    x: points[i].x - 560 * 9,
-                    y: points[i].y - 560 * 9,
-                });
-                // }
+                if (points[i].x < 0) {
+                    line.points.push(points[i]);
+                } else {
+                    line.points.push({
+                        x: points[i].x - 560 * 9,
+                        y: points[i].y - 560 * 9,
+                    });
+                }
             }
-            // console.log(line.points);
+        }
+        if (canvasRef.current.undoing) {
+            return;
         }
         const save = canvasRef.current.getSaveData();
         copyCanvasRef.current.loadSaveData(save, true);
@@ -275,7 +216,6 @@ export default function DrawCanvasServer() {
                 )
             )
         );
-        // console.log(raw);
         copyCanvasContext.putImageData(
             convertToImageData(copyCanvasContext, raw),
             0,
@@ -289,22 +229,6 @@ export default function DrawCanvasServer() {
         }
 
         const { logits, end, start } = await serverClassify(arr);
-        // console.log(logits);
-
-        // const tensor = new Float32Array(28 * 28);
-
-        // for (let i = 0; i < 28 * 28; i++) {
-        //     tensor[i] = raw[Math.floor(i / 28)][i % 28].r / 255.0;
-        // }
-
-        // const input = new Tensor("float32", tensor, [1, 1, 28, 28]);
-        // const feeds = { input: input };
-
-        // const start = performance.now();
-        // const output = await session.run(feeds);
-        // const end = performance.now();
-
-        // const logits = output[Object.keys(output)[0]].data;
         const probs = softmax(logits);
 
         const topKIndices = getTopK(probs, topK);
@@ -316,6 +240,22 @@ export default function DrawCanvasServer() {
 
         setResult({ time: (end - start).toFixed(2), resultData });
     }
+
+    const undo = () => {
+        const tLines = canvasRef.current.lines;
+        canvasRef.current.lines = oLines;
+        // console.log(oLines, tLines);
+        canvasRef.current.undoing = true;
+        // console.log(canvasRef.current.lines.length);
+        canvasRef.current.undo();
+        // console.log(canvasRef.current.lines.length);
+        setOLines(canvasRef.current.lines);
+        canvasRef.current.lines = tLines;
+        tLines.pop();
+        canvasRef.current.undoing = false;
+        // console.log(canvasRef.current.lines, tLines);
+        together();
+    };
 
     const styles = {
         buttons: {
@@ -385,8 +325,20 @@ export default function DrawCanvasServer() {
                         className="centered-button"
                         onClick={(e) => {
                             e.currentTarget.blur();
+                            undo();
+                        }}
+                    >
+                        undo
+                    </button>
+                    <button
+                        style={styles.buttons}
+                        className="centered-button"
+                        onClick={(e) => {
+                            e.currentTarget.blur();
                             canvasRef.current.eraseAll();
+                            setOLines([]);
                             setResult(null);
+                            together();
                         }}
                     >
                         reset
@@ -453,7 +405,7 @@ export default function DrawCanvasServer() {
                         hideGrid={true}
                         canvasWidth={28}
                         canvasHeight={28}
-                        disabled={false}
+                        disabled={true}
                         imgSrc={styles.canvas.imgSrc}
                         immediateLoading={styles.canvas.immediateLoading}
                         hideInterface={styles.canvas.hideInterface}
