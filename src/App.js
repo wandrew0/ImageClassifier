@@ -5,12 +5,14 @@ import DoodleLocal from "./pages/DoodleLocal";
 import DoodleServer from "./pages/DoodleServer";
 import CharacterLocal from "./pages/CharacterLocal";
 import CharacterServer from "./pages/CharacterServer";
+import RootWin from "./pages/RootWin";
 import {
     createBrowserRouter,
     RouterProvider,
     Navigate,
 } from "react-router-dom";
 import RecaptchaTest from "./pages/RecaptchaTest";
+import ErrorBoundary from "./ErrorBoundary";
 
 const router = createBrowserRouter([
     {
@@ -18,7 +20,7 @@ const router = createBrowserRouter([
         element: <RootLayout />,
         children: [
             // { index: true, element: <Navigate to="/DrawCanvas" replace /> },
-            // { path: "/", element: <RootWin /> },
+            { path: "/", element: <RootWin /> },
             // { path: "/login", element: <LoginWin /> },
             // { path: "/signup", element: <SignupWin /> },
             { path: "/DoodleLocal", element: <DoodleLocal /> },
@@ -31,9 +33,7 @@ const router = createBrowserRouter([
 
 function App() {
     return (
-        <div>
-        <RecaptchaTest />
-        </div>
+        <RouterProvider router={router} />
     );
 }
 

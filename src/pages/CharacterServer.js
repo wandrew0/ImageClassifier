@@ -334,14 +334,12 @@ export default function DoodleServer() {
 
     return (
         <div>
-            <hr style={styles.header} />
-            <h4 align="center">
+            <hr style={styles.divideLine}/>
+            <h4 className="blueHeader">
                 Please draw a letter or number on the canvas below
             </h4>
-            <div style={styles.container}>
-                <div className="button-container" style={styles.buttons}>
+            <div align="center">
                     <button
-                        style={styles.buttons}
                         className="centered-button"
                         onClick={(e) => {
                             e.currentTarget.blur();
@@ -351,7 +349,6 @@ export default function DoodleServer() {
                         undo
                     </button>
                     <button
-                        style={styles.buttons}
                         className="centered-button"
                         onClick={(e) => {
                             e.currentTarget.blur();
@@ -364,6 +361,7 @@ export default function DoodleServer() {
                         reset
                     </button>
                 </div>
+            <div style={styles.container} >
                 <div
                     style={{
                         height: "560px",
@@ -373,7 +371,7 @@ export default function DoodleServer() {
                 >
                     {Array.apply(0, Array(345)).map(function (x, i) {
                         return (
-                            <p style={{ margin: "0px 0px" }}>{classOf(i)}</p>
+                            <p style={{margin: "0px 0px"}}>{classOf(i)}</p>
                         );
                     })}
                 </div>
@@ -446,18 +444,18 @@ export default function DoodleServer() {
                         </p>
                         <table className="result-table">
                             <thead>
-                                <tr>
-                                    <th>Class</th>
-                                    <th>Probability</th>
-                                </tr>
+                            <tr>
+                                <th>Class</th>
+                                <th>Probability</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                {result.resultData.map((item, index) => (
-                                    <tr key={index}>
-                                        <td>{item.class}</td>
-                                        <td>{item.prob} %</td>
-                                    </tr>
-                                ))}
+                            {result.resultData.map((item, index) => (
+                                <tr key={index}>
+                                    <td>{item.class}</td>
+                                    <td>{item.prob} %</td>
+                                </tr>
+                            ))}
                             </tbody>
                         </table>
                     </div>

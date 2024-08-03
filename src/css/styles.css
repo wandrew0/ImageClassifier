@@ -9,6 +9,7 @@
 .blueHeader {
     color: rgb(76, 0, 255);
     text-align: center;
+    margin-top: 30px;
 }
 
 .blueText {
@@ -45,17 +46,25 @@
     display: flex; /* Use flexbox to layout the buttons */
     justify-content: center; /* Center the buttons horizontally in the flex container */
     gap: 10px; /* Adds some space between the two buttons */
-    margin-top: 20px
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 500px;
+    height: 100px;
+    align-items: center;
+    border: 1px solid #ccc;
 }
 
 /* Style for the buttons */
 .centered-button {
-    padding: 10px 20px; /* Adds some padding around the text for a comfortable click area */
+    padding: 10px 10px; /* Adds some padding around the text for a comfortable click area */
     border: 1px solid #ccc; /* Adds a light border for definition */
     background-color: #f0f0f0; /* Light background color for the button */
     cursor: pointer; /* Changes the cursor to indicate it's clickable */
     color: rgb(76, 0, 255);
     margin: 10px;
+    width: 10%;
+    height: 50%;
+
 }
 
 /* Optional: Style for the buttons on hover for visual feedback */

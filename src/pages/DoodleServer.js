@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import CanvasDraw from "@win11react/react-canvas-draw";
-import { classOf } from "./QuickDrawClasses";
+import {classOf} from "./QuickDrawClasses";
 
 import "./DrawCanvas.css";
 
 const callApi = async (path, body) => {
-    const headers = { "Content-Type": "application/json" };
+    const headers = {"Content-Type": "application/json"};
 
     const url = "http://" + window.location.hostname + ":2000" + path;
 
@@ -28,7 +28,7 @@ const serverClassify = async (arr) => {
     const end = parsed.data.end;
     const start = parsed.data.start;
 
-    return { logits, end, start };
+    return {logits, end, start};
 };
 
 const softmax = (logits) => {
@@ -142,8 +142,8 @@ export default function DoodleServer() {
         const subHeight = maxY - minY + 1;
         const startRow = Math.floor((containerHeight - subHeight) / 2);
         const startCol = Math.floor((containerWidth - subWidth) / 2);
-        const res = Array.from({ length: containerHeight }, () =>
-            Array.from({ length: containerWidth }, () => ({
+        const res = Array.from({length: containerHeight}, () =>
+            Array.from({length: containerWidth}, () => ({
                 r: 0,
                 g: 0,
                 b: 0,
@@ -228,7 +228,7 @@ export default function DoodleServer() {
             arr[i] = raw[Math.floor(i / 28)][i % 28].r / 255.0;
         }
 
-        const { logits, end, start } = await serverClassify(arr);
+        const {logits, end, start} = await serverClassify(arr);
         const probs = softmax(logits);
 
         const topKIndices = getTopK(probs, topK);
@@ -238,7 +238,7 @@ export default function DoodleServer() {
             prob: (probs[idx] * 100).toFixed(2),
         }));
 
-        setResult({ time: (end - start).toFixed(2), resultData });
+        setResult({time: (end - start).toFixed(2), resultData});
     }
 
     const undo = () => {
@@ -308,42 +308,42 @@ export default function DoodleServer() {
             hideGridY: false,
             enablePanAndZoom: false,
             mouseZoomFactor: 0.01,
-            zoomExtents: { min: 0.33, max: 3 },
+            zoomExtents: {min: 0.33, max: 3},
         },
     };
 
     return (
         <div>
-            <hr style={styles.header} />
-            <h4 align="center">
-                Please draw a letter or number on the canvas below
+            <hr style={styles.divideLine}/>
+            <h4 className="blueHeader">
+                Just doodle on the canvas below and see what AI recognizes in your sketch!
             </h4>
+            <div align="center">
+
+                <button
+
+                    className="centered-button"
+                    onClick={(e) => {
+                        e.currentTarget.blur();
+                        undo();
+                    }}
+                >
+                    undo
+                </button>
+                <button
+                    className="centered-button"
+                    onClick={(e) => {
+                        e.currentTarget.blur();
+                        canvasRef.current.eraseAll();
+                        setOLines([]);
+                        setResult(null);
+                        together();
+                    }}
+                >
+                    reset
+                </button>
+            </div>
             <div style={styles.container}>
-                <div className="button-container" style={styles.buttons}>
-                    <button
-                        style={styles.buttons}
-                        className="centered-button"
-                        onClick={(e) => {
-                            e.currentTarget.blur();
-                            undo();
-                        }}
-                    >
-                        undo
-                    </button>
-                    <button
-                        style={styles.buttons}
-                        className="centered-button"
-                        onClick={(e) => {
-                            e.currentTarget.blur();
-                            canvasRef.current.eraseAll();
-                            setOLines([]);
-                            setResult(null);
-                            together();
-                        }}
-                    >
-                        reset
-                    </button>
-                </div>
                 <div
                     style={{
                         height: "560px",
@@ -353,7 +353,7 @@ export default function DoodleServer() {
                 >
                     {Array.apply(0, Array(345)).map(function (x, i) {
                         return (
-                            <p style={{ margin: "0px 0px" }}>{classOf(i)}</p>
+                            <p style={{margin: "0px 0px"}}>{classOf(i)}</p>
                         );
                     })}
                 </div>
@@ -426,18 +426,18 @@ export default function DoodleServer() {
                         </p>
                         <table className="result-table">
                             <thead>
-                                <tr>
-                                    <th>Class</th>
-                                    <th>Probability</th>
-                                </tr>
+                            <tr>
+                                <th>Class</th>
+                                <th>Probability</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                {result.resultData.map((item, index) => (
-                                    <tr key={index}>
-                                        <td>{item.class}</td>
-                                        <td>{item.prob} %</td>
-                                    </tr>
-                                ))}
+                            {result.resultData.map((item, index) => (
+                                <tr key={index}>
+                                    <td>{item.class}</td>
+                                    <td>{item.prob} %</td>
+                                </tr>
+                            ))}
                             </tbody>
                         </table>
                     </div>
