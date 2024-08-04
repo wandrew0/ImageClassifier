@@ -11,7 +11,7 @@ import {
     RouterProvider,
     Navigate,
 } from "react-router-dom";
-import RecaptchaTest from "./pages/RecaptchaTest";
+import AppWithRecaptchaTest from "./pages/AppWithRecaptchaTest";
 import ErrorBoundary from "./ErrorBoundary";
 
 const router = createBrowserRouter([

@@ -8,6 +8,7 @@ import DoodleServer from "./DoodleServer";
 import CharacterLocal from "./CharacterLocal";
 import CharacterServer from "./CharacterServer";
 import ErrorBoundary from "../ErrorBoundary";
+import RootWin from "./RootWin";
 const newRouter = createBrowserRouter([
     {
         path: "/",
@@ -17,6 +18,7 @@ const newRouter = createBrowserRouter([
             // { path: "/", element: <RootWin /> },
             // { path: "/login", element: <LoginWin /> },
             // { path: "/signup", element: <SignupWin /> },
+            { path: "/", element: <RootWin /> },
             { path: "/DoodleLocal", element: <DoodleLocal /> },
             { path: "/DoodleServer", element: <DoodleServer /> },
             { path: "/CharacterLocal", element: <CharacterLocal /> },
@@ -25,7 +27,7 @@ const newRouter = createBrowserRouter([
     },
 ]);
 
-const RecaptchaTest = () => {
+const AppWithRecaptchaTest = () => {
     const SITE_KEY= "6LduixgqAAAAANHUz1xvlkZw8ZC96ZhrKjqbNjHk";
     const [isHuman, setIsHuman] = useState(false);
     // script1.js
@@ -43,7 +45,6 @@ const RecaptchaTest = () => {
 
     const  handleRecaptcha = (value) => {
         console.log('Captcha value:', value);
-        setIsHuman(true);
     };
 
     useEffect(() => {
@@ -68,6 +69,8 @@ const RecaptchaTest = () => {
 
     const handleSubmit = (event) => {
         event.preventDefault();
+        setIsHuman(true);
+        /*
         console.log("response value:" + grecaptcha.getResponse());
         console.log('Form submitted with reCAPTCHA value:', recaptchaValue);
         if (!recaptchaValue) {
@@ -83,6 +86,8 @@ const RecaptchaTest = () => {
             d.json().then((jsonD) => {console.log("response:" + jsonD)})
                 .catch((jsonError) => {console.log("error in json:" + jsonError)})})
             .catch((error) => {console.log("error:" + error)});
+
+         */
 
 
     };
@@ -110,19 +115,22 @@ const RecaptchaTest = () => {
     };
     if (isHuman) {
         return (
-            <ErrorBoundary>
             <RouterProvider router={newRouter} />
-            </ErrorBoundary>
+
         )
     } else {
         return (
             <div style={styles.container}>
-                    <div className="g-recaptcha" data-sitekey={SITE_KEY}
+                <form onSubmit={handleSubmit}>
+                    <div class="g-recaptcha" data-sitekey={SITE_KEY}
                          data-callback="handleRecaptcha"/>
-
+                    <br />
+                    <input type="submit" value="Submit" />
+                </form>
             </div>
+
         )
     }
 
 }
-export default RecaptchaTest;
+export default AppWithRecaptchaTest;

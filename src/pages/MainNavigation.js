@@ -8,6 +8,9 @@ import MainContext from "./MainContext";
 const MainNavigation = ({ active }) => {
     const navigate = useNavigate();
     const ctx = React.useContext(MainContext);
+    const NavLinkStyle = {
+        color: "orange",
+    }
     function Logout() {
         ctx.setActive1("0");
         localStorage.token = "";
@@ -28,7 +31,7 @@ const MainNavigation = ({ active }) => {
                     <div className="navline">
                         <ul className="list">
                             <li>
-                                <NavLink to="/"> Home</NavLink>
+                                <NavLink  to="/"> Home</NavLink>
                             </li>
                             <li>
                                 <NavLink to="/DoodleLocal">
