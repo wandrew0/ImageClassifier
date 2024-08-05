@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import CanvasDraw from "@win11react/react-canvas-draw";
 import { classOf } from "./EMNISTBalancedClasses";
+import {useMainContext} from "./MainContext";
 
 import "./DrawCanvas.css";
 
@@ -18,9 +19,10 @@ const callApi = async (path, body) => {
     return response;
 };
 
-const serverClassify = async (arr) => {
+const serverClassify = async (arr, key) => {
     const res = await callApi("/api/emnistb/classify", {
         input: arr,
+        key: key,
     });
     const parsed = await res.json();
 
@@ -72,6 +74,7 @@ export default function DoodleServer() {
     const [copyCanvasContext, setCopyCanvasContext] = useState(null);
 
     const [result, setResult] = useState(null);
+    const {key, setKey} = useMainContext();
     const topK = 5;
 
     const [oLines, setOLines] = useState([]);
@@ -248,7 +251,7 @@ export default function DoodleServer() {
             arr[i] = transformed[Math.floor(i / 28)][i % 28].r / 255.0;
         }
 
-        const { logits, end, start } = await serverClassify(arr);
+        const { logits, end, start } = await serverClassify(arr, key);
         const probs = softmax(logits);
 
         const topKIndices = getTopK(probs, topK);

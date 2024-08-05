@@ -3,11 +3,9 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { isActive } from "../components/common";
 //import classes from "./MainNavigation.css"
 import "./MainNavigation.css";
-import MainContext from "./MainContext";
 
 const MainNavigation = ({ active }) => {
     const navigate = useNavigate();
-    const ctx = React.useContext(MainContext);
     const NavLinkStyle = {
         color: "orange",
     }

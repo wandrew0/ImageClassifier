@@ -3,7 +3,7 @@ import CanvasDraw from "@win11react/react-canvas-draw";
 import {classOf} from "./QuickDrawClasses";
 
 import "./DrawCanvas.css";
-
+import {useMainContext} from "./MainContext";
 const callApi = async (path, body) => {
     const headers = {"Content-Type": "application/json"};
 
@@ -18,8 +18,10 @@ const callApi = async (path, body) => {
     return response;
 };
 
-const serverClassify = async (arr) => {
+const serverClassify = async (arr, key) => {
+    console.log("key:" + key);
     const res = await callApi("/api/quickdraw/classify", {
+        key: key,
         input: arr,
     });
     const parsed = await res.json();
@@ -57,6 +59,8 @@ export default function DoodleServer() {
     const topK = 5;
 
     const [oLines, setOLines] = useState([]);
+    const {key, setKey} = useMainContext();
+    console.log("key=" + key);
 
     useEffect(() => {
         const copy = copyCanvasRef.current.canvas.drawing.getContext("2d", {
@@ -228,7 +232,7 @@ export default function DoodleServer() {
             arr[i] = raw[Math.floor(i / 28)][i % 28].r / 255.0;
         }
 
-        const {logits, end, start} = await serverClassify(arr);
+        const {logits, end, start} = await serverClassify(arr, key);
         const probs = softmax(logits);
 
         const topKIndices = getTopK(probs, topK);

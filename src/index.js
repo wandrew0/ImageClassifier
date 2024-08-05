@@ -1,15 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
 import AppWithRecaptchaTest from "./pages/AppWithRecaptchaTest";
-
+import {MainContextProvider} from "./pages/MainContext";
 
 
 ReactDOM.render(
-  <React.StrictMode>
+    <React.StrictMode>
+        <MainContextProvider>
+
     <AppWithRecaptchaTest />
-  </React.StrictMode>,
+        </MainContextProvider>
+    </React.StrictMode>,
     document.getElementById('root'));
 
 

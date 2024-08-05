@@ -1,15 +1,18 @@
 import * as React from "react";
+import {useState, useContext} from 'react';
 
-export const MainContext = React.createContext({
-  active : 1
+const MainContext = React.createContext({
+    key : "none",
 });
 
-export function MainContextProvider({ value, children }) {
+function MainContextProvider({ value, children }) {
+    const [key, setKey] = useState('none');
     return(
-        <MainContext.Provider value={value}>
+        <MainContext.Provider value={{key, setKey}}>
             {children}
         </MainContext.Provider>
     )
 }
+const useMainContext = () => useContext(MainContext);
 
-export default MainContext
+export { MainContextProvider, useMainContext };

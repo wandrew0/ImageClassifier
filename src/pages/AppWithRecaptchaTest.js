@@ -1,5 +1,4 @@
-import {ReCAPTCHA} from "react-google-recaptcha";
-import {useRef, useState} from "react";
+import {useState} from "react";
 import {useEffect} from "react";
 import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import RootLayout from "./RootLayout";
@@ -7,8 +6,8 @@ import DoodleLocal from "./DoodleLocal";
 import DoodleServer from "./DoodleServer";
 import CharacterLocal from "./CharacterLocal";
 import CharacterServer from "./CharacterServer";
-import ErrorBoundary from "../ErrorBoundary";
 import RootWin from "./RootWin";
+import {MainContextProvider, useMainContext} from "./MainContext";
 const newRouter = createBrowserRouter([
     {
         path: "/",
@@ -30,6 +29,8 @@ const newRouter = createBrowserRouter([
 const AppWithRecaptchaTest = () => {
     const SITE_KEY= "6LduixgqAAAAANHUz1xvlkZw8ZC96ZhrKjqbNjHk";
     const [isHuman, setIsHuman] = useState(false);
+    const [token, setToken] = useState('');
+    const {key, setKey} = useMainContext();
     // script1.js
     function loadScript(url) {
         var script = document.createElement('script');
@@ -41,10 +42,12 @@ const AppWithRecaptchaTest = () => {
     loadScript('https://www.google.com/recaptcha/api.js');
 
 // Your code here
+    console.log("key is " + key);
 
 
     const  handleRecaptcha = (value) => {
-        console.log('Captcha value:', value);
+        //console.log('Captcha value:', value);
+        setToken(value);
     };
 
     useEffect(() => {
@@ -69,25 +72,25 @@ const AppWithRecaptchaTest = () => {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        setIsHuman(true);
-        /*
-        console.log("response value:" + grecaptcha.getResponse());
-        console.log('Form submitted with reCAPTCHA value:', recaptchaValue);
-        if (!recaptchaValue) {
-            alert('Please complete the reCAPTCHA');
-            return;
-        }
+
+        //console.log("response value:" + grecaptcha.getResponse());
+
         // Proceed with form submission or further validation
         const response =  callApi("/api/recaptcha/verify", {
-            token: recaptchaValue
+            token: token,
         });
 
         response.then((d) => {//console.log("response:" + d);
-            d.json().then((jsonD) => {console.log("response:" + jsonD)})
+            d.json().then((data) => {
+                console.log("response:" + data.status);
+                if (data.status === "success") {
+                    console.log(data.api_key);
+                    setKey(data.api_key);
+                    setIsHuman(true);
+                }
+            })
                 .catch((jsonError) => {console.log("error in json:" + jsonError)})})
             .catch((error) => {console.log("error:" + error)});
-
-         */
 
 
     };
@@ -113,21 +116,36 @@ const AppWithRecaptchaTest = () => {
         },
 
     };
+
     if (isHuman) {
         return (
             <RouterProvider router={newRouter} />
-
         )
     } else {
         return (
             <div style={styles.container}>
-                <form onSubmit={handleSubmit}>
+                <form  onSubmit={handleSubmit}>
                     <div class="g-recaptcha" data-sitekey={SITE_KEY}
                          data-callback="handleRecaptcha"/>
                     <br />
-                    <input type="submit" value="Submit" />
+                    <input type="submit" value="Submit" style={{
+                        backgroundColor: 'black',
+                        border: 'none',
+                        color: 'white',
+                        padding: '15px 32px',
+                        textDecoration: 'none',
+                        display: 'inline-block',
+                        fontSize: '16px',
+                        margin: '4px 2px',
+                        cursor: 'pointer',
+                        borderRadius: '4px',
+                        align: 'center',
+                        textAlign: 'center'
+                    }}
+                    />
                 </form>
             </div>
+
 
         )
     }

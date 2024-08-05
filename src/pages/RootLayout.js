@@ -19,10 +19,10 @@ const RootLayout = () => {
   <MainContext.Provider/>
   */
     return(
-        <MainContextProvider value={{ active, setActive1 }}>
-            <MainNavigation active={active}/>         
+        <div>
+            <MainNavigation />
             <Outlet />
-        </MainContextProvider>
+        </div>
 
     )
 }

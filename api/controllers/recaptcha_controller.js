@@ -1,5 +1,8 @@
 const https = require("https");
-const RECAPTCHA_API_KEY = "6LduixgqAAAAAAFyO_u3lL4dJg_zBhc4kDCbQnQl";
+const querystring = require('querystring');
+const constants = require("./constants");
+const logger = require('./../logger');
+
 
 function https_post({ body, ...options }) {
     return new Promise((resolve, reject) => {
@@ -27,27 +30,75 @@ function https_post({ body, ...options }) {
     });
 };
 
-exports.verify = async (req, res) => {
+exports.verify = async (request, response) => {
     try {
-        console.log("token" + req.body.token);
-        const token = req.body.token;
-        const url=
-            `https://google.com/recaptcha/api/siteverify?secret={RECAPTCHA_API_KEY}&response={token}`;
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                console.log('Success:', data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
+        // console.log(req.body.input);
+        if (!request.body.token) {
+            throw new Error("missing input token");
+        }
+        var token = request.body.token;
+        //logger.debug("token is:" + token);
+        // The data to be sent in the POST request as URL-encoded form data
+        const postData = querystring.stringify({
+            secret: constants.RECAPTCHA_API_KEY,
+            response: token
+        });
+
+        // opitons
+        const options = {
+            hostname: 'www.google.com',
+            port: 443,
+            path: "/recaptcha/api/siteverify",
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(postData)
+            }
+        };
+
+        // Making the HTTPS request
+        const req = https.request(options, (res) => {
+            let data = '';
+
+            // Collect the response data
+            res.on('data', (chunk) => {
+                data += chunk;
             });
 
-        res.status(200).json({
-            status: "success",
+            // When the response is complete
+            res.on('end', () => {
+                let jsonO = JSON.parse(data);
+                logger.debug('Response:', jsonO);
+                if (jsonO.success) {
+                    response.status(200).json({
+                        status: "success",
+                        api_key: constants.API_KEY,
+                    })
+                } else {
+                    response.status(200).json({
+                        status: "fail",
+                    })
+                }
+            });
         });
+
+        // Handling request errors
+        req.on('error', (e) => {
+            logger.error('Request error:', e.message);
+            response.status(200).json({
+                status: "fail",
+                error: e.message,
+            })
+        });
+
+       // Writing the data to the request body
+        req.write(postData);
+
+        // Ending the request
+        req.end();
     } catch (err) {
-        console.log(err);
-        res.status(400).json({
+        logger.error(err);
+        response.status(400).json({
             status: "fail",
             message: err.message,
         });
