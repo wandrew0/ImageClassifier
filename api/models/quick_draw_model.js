@@ -1,14 +1,24 @@
 const ort = require("onnxruntime-node");
 const path = require("path");
+const fs = require("fs");
 // const { performance } = require("node:perf_hooks");
 
 var session;
 
 (async () => {
-    session = await ort.InferenceSession.create(
-        path.join(__dirname, "/../../public/efficientnet_v2_s_quickdraw.onnx"),
-        { graphOptimizationLevel: "all" }
+    let filepath = path.join(
+        __dirname,
+        "/../../build/efficientnet_v2_s_quickdraw.onnx"
     );
+    if (!fs.existsSync(filepath)) {
+        filepath = path.join(
+            __dirname,
+            "/../../public/efficientnet_v2_s_quickdraw.onnx"
+        );
+    }
+    session = await ort.InferenceSession.create(filepath, {
+        graphOptimizationLevel: "all",
+    });
 })();
 
 function timeout(ms) {
