@@ -6,3 +6,4 @@ docker-compose.yml
 .idea/
 **/.DS_Store
 .git
+imageclassifier.log
