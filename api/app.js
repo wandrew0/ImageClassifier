@@ -3,7 +3,7 @@ const cors = require("cors");
 
 const quick_draw_router = require("./routes/quick_draw_routes");
 const emnistb_router = require("./routes/emnistb_routes");
-const recaptcha_router = require("./routes/recapcha");
+const recaptcha_router = require("./routes/recaptcha");
 
 const app = express();
 
